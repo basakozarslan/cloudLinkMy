@@ -1,4 +1,7 @@
 from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from .forms import ShortenURLForm
 from .models import ShortenedURL
 import hashlib
@@ -31,21 +34,16 @@ def shorten_url(request):
 
     return render(request, 'cloudLinkCore/shorten.html', {'form': form})
 
-def delete_old_records():   #for 1 week
-    one_week_ago = timezone.now() - timezone.timedelta(days=7)
-    old_records = ShortenedURL.objects.filter(created_at__lte=one_week_ago)
-    deleted_count = old_records.count()
-    old_records.delete()
-    return deleted_count
 
-def delete_records_created_before_two_days():   #for 2 days
-    two_days_ago = timezone.now() - timezone.timedelta(days=2)
-    old_records = ShortenedURL.objects.filter(created_at__lte=two_days_ago)
-    deleted_count = old_records.count()
-    old_records.delete()
-    return deleted_count
+@api_view(['POST'])
+def delete_old_records(request):
+    if request.method == 'POST':
+        one_week_ago = timezone.now() - timezone.timedelta(days=7)
+        old_records = ShortenedURL.objects.filter(created_at__lte=one_week_ago)
+        deleted_count = old_records.count()
+        old_records.delete()
+        return Response({'deleted_count': deleted_count})
 
-from django.shortcuts import get_object_or_404
 
 def redirect_to_long_url(request, short_code):
     short_url = get_object_or_404(ShortenedURL, short_code=short_code)
