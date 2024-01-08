@@ -11,13 +11,13 @@
 </head>
 <body>
     <!-- Page header with tagline-->
-<header class="py-5 bg-light border-bottom mb-4">
-    <div class="container">
-        <div class="text-center my-5">
-            <h1 class="fw-bolder" style="color: #8FBC8F;  font-size: 5.5rem;">Welcome to CloudLink!</h1>
+    <header class="py-5 bg-light border-bottom mb-4">
+        <div class="container">
+            <div class="text-center my-5">
+                <h1 class="fw-bolder" style="color: #8FBC8F; font-size: 5.5rem;">Welcome to CloudLink!</h1>
+            </div>
         </div>
-    </div>
-</header>
+    </header>
     <div class="container max-width:2000px">
         <div class="row justify-content-center align-items-center">
             <div class="content">
@@ -29,45 +29,50 @@
                             {{ form.as_p }}
                             <button class="btn btn-primary mt-3" id="button-search" type="submit" style="background-color: #8FBC8F; border-color: #8FBC8F; font-size: 1.2rem;" >Shorten URL</button>
                         </form>
+                        <form method="post" action="{% url 'delete_old_records' %}">
+                            <button class="btn btn-primary mt-3" id="custom-button" style="background-color: #8FBC8F; border-color: #8FBC8F; font-size: 1.2rem;">Delete Records for 1 week</button>
+                            <div id="message" style="margin-top: 10px;"></div>
+                        </form>
                     </div>
                 </div>
-                    <form id="deleteOldRecordsForm" data-delete-url="{% url 'delete_old_records' %}" method="POST">
-                        {% csrf_token %}
-                        <input id="deleteRecordsBtn" type="submit" value="Delete Records Older Than 1 week">
-                    </form>
-                    <script>
-                        document.getElementById('deleteOldRecordsForm').addEventListener('submit', function(event) {
-                            event.preventDefault(); // Formun normal submit işlemini engelle
-
-                            const deleteUrl = this.getAttribute('data-delete-url');
-
-                            // AJAX isteği ile delete_old_records URL'sine POST isteği gönder
-                            fetch(deleteUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRFToken': '{{ csrf_token }}',
-                                },
-                            })
-                            .then(response => {
-                                // İstek başarılıysa sayfayı yenile
-                                if (response.ok) {
-                                    location.reload();
-                                }
-                            })
-                            .catch(error => console.error('Error:', error));
-                        });
-                    </script>
             </div>
         </div>
     </div>
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
-    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
-    crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
-    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-    crossorigin="anonymous"></script>
+
+    <script>
+        document.getElementById('custom-button').addEventListener('click', function(event) {
+            event.preventDefault();
+            
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch('/delete_old_records/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Records deleted!');
+                    document.getElementById('message').innerText = 'Records deleted!';
+                } else {
+                    console.log('Failed to delete records');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
 </body>
 </html>
